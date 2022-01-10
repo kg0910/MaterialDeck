@@ -1,4 +1,5 @@
 import {compatibleCore} from "../misc.js";
+import * as torgchecks from "../../../../systems/torgeternity/module/torgchecks.js";
 
 export class torgeternity{
     constructor(){
@@ -47,11 +48,11 @@ export class torgeternity{
     }
 
     getPassivePerception(token) {
-        return token.actor.data.data.skills.prc.passive;
+        return token.actor.data.data.skills.find.value;
     }
 
     getPassiveInvestigation(token) {
-        return token.actor.data.data.skills.inv.passive;
+        return token.actor.data.data.skills.find.value;
     }
 
     getAbility(token, ability) {
@@ -60,7 +61,7 @@ export class torgeternity{
     } 
 
     getAbilityModifier(token, ability) {
-        return 0;
+        return token.actor.data.data.attributes?.[ability].value;
     }
 
     getAbilitySave(token, ability) {
@@ -107,11 +108,6 @@ export class torgeternity{
      * Roll
      */
      roll(token,roll,options,ability,skill,save) {
-		 console.log(roll);
-		 console.log(options);
-		 console.log(ability);
-		 console.log(skill);
-		 console.log(save);
         if (roll == undefined) roll = 'ability';
         if (ability == undefined) ability = 'str';
         if (skill == undefined) skill = 'acr';
@@ -194,13 +190,50 @@ export class torgeternity{
     }
 
     rollItem(item) {
-        if(item.data.itemType == 'firearm' ||
-            item.data.itemType== 'meleeweapon'|| 
-            item.data.itemType== 'missileweapon'|| 
-            item.data.itemType== 'heavywepon'|| 
-            item.data.itemType== 'energyweapon')
-            return item.weaponAttack();
+        if(item.data.type == 'firearm' ||
+            item.data.type == 'meleeweapon'|| 
+            item.data.type == 'missileweapon'|| 
+            item.data.type == 'heavywepon'|| 
+            item.data.type == 'energyweapon'){
+                var test = this.createTestObject(item.actor, item)
+                return torgchecks.weaponAttack(test);
+            }
         else
             return item.roll()
+    }
+
+    createTestObject(actor, item)
+    {
+        var skill = actor.data.data.skills?.[item.data.data.attackWith];
+        var attribute = actor.data.data.attributes?.[skill.baseAttribute];
+
+        var test = {
+            actor: actor.data._id,
+            item: item.data,
+            actorPic: actor.img,
+            actorType: "stormknight",
+            skillName: item.data.attackWith,
+            skillBaseAttribute: skill.baseAttribute,
+            skillAdds: skill.adds==null?0:skill.value - attribute,
+            skillValue: skill.value,
+            unskilledUse: skill.unskilledUse,
+            strengthValue: actor.data.data.attributes.strength,
+            charismaValue: actor.data.data.attributes.charisma,
+            dexterityValue: actor.data.data.attributes.dexterity,
+            mindValue: actor.data.data.attributes.mind,
+            spiritValue: actor.data.data.attributes.spirit,
+            testType: "attack",
+            weaponName: item.name,
+            weaponDamageType: item.data.data.damageType,
+            weaponDamage: item.data.data.damage,
+            possibilityTotal: 0,
+            upTotal: 0,
+            heroTotal: 0,
+            dramaTotal: 0,
+            cardsPlayed: 0,
+            sizeModifier: 0,
+            vulnerableModifier: 0
+         };
+         return test;
     }
 }
