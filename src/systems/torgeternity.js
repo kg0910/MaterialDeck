@@ -195,17 +195,24 @@ export class torgeternity{
             item.data.type == 'missileweapon'|| 
             item.data.type == 'heavywepon'|| 
             item.data.type == 'energyweapon'){
-                var test = this.createTestObject(item.actor, item)
+                var test = this.createTestObject(item)
                 return torgchecks.weaponAttack(test);
             }
         else
             return item.roll()
     }
 
-    createTestObject(actor, item)
+    createTestObject(item)
     {
+        var actor = item.actor;
         var skill = actor.data.data.skills?.[item.data.data.attackWith];
         var attribute = actor.data.data.attributes?.[skill.baseAttribute];
+        var damage = 0;
+
+        if(item.data.data.damageType=='flat')
+            damage =  item.data.data.damage;
+        else
+            damage = actor.data.data.attributes.strength + item.data.data.damage;
 
         var test = {
             actor: actor.data._id,
@@ -214,7 +221,7 @@ export class torgeternity{
             actorType: "stormknight",
             skillName: item.data.attackWith,
             skillBaseAttribute: skill.baseAttribute,
-            skillAdds: skill.adds==null?0:skill.value - attribute,
+            skillAdds: skill.adds==null?0:skill.adds,
             skillValue: skill.value,
             unskilledUse: skill.unskilledUse,
             strengthValue: actor.data.data.attributes.strength,
@@ -225,7 +232,7 @@ export class torgeternity{
             testType: "attack",
             weaponName: item.name,
             weaponDamageType: item.data.data.damageType,
-            weaponDamage: item.data.data.damage,
+            weaponDamage: damage,
             possibilityTotal: 0,
             upTotal: 0,
             heroTotal: 0,
